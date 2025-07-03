@@ -1,1 +1,3 @@
 output/*.pdf
+app/supervisor.log
+app/supervisor.pid

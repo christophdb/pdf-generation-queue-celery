@@ -60,7 +60,7 @@ def index():
           <p style="color:green;">Started new task: <b>{{ new_task_id }}</b></p>
         {% endif %}
         <form method="post" action="/start">
-            <input name="count" type="number" value="10" min="1" max="1000" />
+            <input name="count" type="number" value="20" min="1" max="1000" />
             <button type="submit">Start PDF Task</button>
         </form>
         <table border="1" cellpadding="5">
