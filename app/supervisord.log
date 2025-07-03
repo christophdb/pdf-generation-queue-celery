@@ -206,3 +206,12 @@
 2025-07-03 13:42:14,741 INFO spawned: 'flask' with pid 8
 2025-07-03 13:42:15,865 INFO success: celery entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
 2025-07-03 13:42:15,865 INFO success: flask entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-07-03 13:43:45,587 WARN received SIGTERM indicating exit request
+2025-07-03 13:43:45,587 INFO waiting for celery, flask to die
+2025-07-03 13:43:45,591 WARN stopped: flask (terminated by SIGTERM)
+2025-07-03 13:43:47,626 INFO stopped: celery (exit status 0)
+2025-07-03 13:43:53,429 INFO supervisord started with pid 1
+2025-07-03 13:43:54,432 INFO spawned: 'celery' with pid 7
+2025-07-03 13:43:54,434 INFO spawned: 'flask' with pid 8
+2025-07-03 13:43:56,020 INFO success: celery entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+2025-07-03 13:43:56,020 INFO success: flask entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
