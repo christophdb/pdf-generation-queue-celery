@@ -1,0 +1,33 @@
+---
+services:
+  redis:
+    container_name: redis
+    image: redis:alpine
+    networks:
+      - pdf
+
+  gotenberg:
+    container_name: gotenberg
+    image: gotenberg/gotenberg:8
+    networks:
+      - pdf
+
+  worker:
+    container_name: worker
+    build: .
+    user: "1000:1000"
+    volumes:
+      - ./app:/app
+      - ./output:/tmp
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - GOTENBERG_URL=http://gotenberg:3000
+    depends_on:
+      - redis
+      - gotenberg
+    networks:
+      - pdf
+
+networks:
+  pdf:
+    name: pdf
