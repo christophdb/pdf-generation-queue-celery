@@ -13,6 +13,7 @@ RUN apt-get update && \
         curl \
         vim \
         less \
+        supervisor \
         iputils-ping \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -23,6 +24,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Switch to the new user
 USER 1000
 
+EXPOSE 5000
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
 # Keep the container running and allow interactive shell access
 #CMD ["tail", "-f", "/dev/null"]
-CMD ["celery", "-A", "tasks", "worker", "--loglevel=info"]
+#CMD ["celery", "-A", "tasks", "worker", "--loglevel=info"]
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
