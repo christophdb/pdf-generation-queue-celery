@@ -16,11 +16,9 @@ app = Flask(__name__)
 
 @app.route('/start', methods=['POST'])
 def start_task():
-    # Get parameters from form or set defaults
     count = int(request.form.get('count', 10))
     html_template = "<h1>Hello World! PDF #{i}</h1>"
     output_dir = "/tmp"
-    # Start the Celery task
     result = generate_multiple_pdfs.delay(html_template, output_dir, count)
     TASK_IDS.append(result.id)
     return redirect(url_for('index', new_task_id=result.id))
@@ -32,20 +30,29 @@ def index():
     for task_id in TASK_IDS:
         result = AsyncResult(task_id, app=celery_app)
         meta = result.info if result.info else {}
-        # Handle progress or finished state
-        if isinstance(meta, dict):
+        # Defaults
+        progress = total = percent = None
+        duration = start_time = end_time = files = None
+
+        if result.state == 'PROGRESS' and isinstance(meta, dict):
             progress = meta.get('current', 0)
             total = meta.get('total', 0)
-            percent = meta.get('percent', 0)
-        else:
-            # Task finished; meta is the return value (list of files)
-            progress = total = percent = 0
+            percent = int(100 * progress / total) if total else 0
+        elif result.state == 'SUCCESS' and isinstance(meta, dict):
+            duration = meta.get('duration')
+            start_time = meta.get('start_time')
+            end_time = meta.get('end_time')
+            files = meta.get('files', [])
         tasks.append({
             'id': task_id,
             'state': result.state,
             'progress': progress,
             'total': total,
             'percent': percent,
+            'duration': duration,
+            'start_time': start_time,
+            'end_time': end_time,
+            'files': files,
         })
     return render_template_string('''
         <h1>Celery Tasks</h1>
@@ -57,14 +64,46 @@ def index():
             <button type="submit">Start PDF Task</button>
         </form>
         <table border="1" cellpadding="5">
-            <tr><th>Task ID</th><th>Status</th><th>Progress</th></tr>
+            <tr>
+                <th>Task ID</th>
+                <th>Status</th>
+                <th>Progress</th>
+                <th>Duration (s)</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+            </tr>
             {% for task in tasks %}
             <tr>
                 <td>{{task.id}}</td>
                 <td>{{task.state}}</td>
                 <td>
-                    {% if task.total %}
+                    {% if task.progress is not none and task.total %}
                         {{task.progress}} / {{task.total}} ({{task.percent}}%)
+                    {% elif task.state == 'SUCCESS' %}
+                        Done
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if task.duration %}
+                        {{ "%.2f"|format(task.duration) }}
+                    {% elif task.state == 'SUCCESS' %}
+                        n/a
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if task.start_time %}
+                        {{task.start_time}}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if task.end_time %}
+                        {{task.end_time}}
                     {% else %}
                         -
                     {% endif %}

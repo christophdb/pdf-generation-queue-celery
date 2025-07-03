@@ -12,11 +12,12 @@ celery_app = Celery('pdf_tasks', broker=CELERY_BROKER_URL, backend=CELERY_BROKER
 @celery_app.task(bind=True)
 def generate_multiple_pdfs(self, html_template, output_dir, count):
     """
-    Generate multiple PDFs and report progress.
+    Generate multiple PDFs and report progress, including timing information.
     :param html_template: HTML template string with {i} for numbering.
     :param output_dir: Directory to save PDFs.
     :param count: How many PDFs to generate.
     """
+    start_time = datetime.utcnow()
     date_str = datetime.now().strftime('%Y-%m-%d')
     results = []
     for i in range(1, count + 1):
@@ -34,7 +35,6 @@ def generate_multiple_pdfs(self, html_template, output_dir, count):
                 f.write(response.content)
             results.append(output_path)
         else:
-            # Optionally, you can stop or skip on error
             raise Exception(f"Gotenberg error: {response.status_code} {response.text}")
         # Update progress after each PDF
         self.update_state(
@@ -45,4 +45,11 @@ def generate_multiple_pdfs(self, html_template, output_dir, count):
                 'last_file': output_path
             }
         )
-    return results
+    end_time = datetime.utcnow()
+    duration = (end_time - start_time).total_seconds()
+    return {
+        'files': results,
+        'start_time': start_time.isoformat(),
+        'end_time': end_time.isoformat(),
+        'duration': duration
+    }
