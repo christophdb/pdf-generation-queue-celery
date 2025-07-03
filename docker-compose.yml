@@ -7,7 +7,6 @@ services:
       - pdf
 
   gotenberg:
-    container_name: gotenberg
     image: gotenberg/gotenberg:8
     networks:
       - pdf

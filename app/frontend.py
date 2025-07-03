@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 @app.route('/start', methods=['POST'])
 def start_task():
-    count = int(request.form.get('count', 10))
+    count = int(request.form.get('count', 20))
     html_template = "<h1>Hello World! PDF #{i}</h1>"
     output_dir = "/tmp"
     result = generate_multiple_pdfs.delay(html_template, output_dir, count)
